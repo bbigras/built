@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["detect_ci","Detect execution on various Continiuous Integration platforms."],["get_repo_description","Retrieves the git-tag or hash describing the exact version."],["parse_versions","Parses version-strings with `semver::Version::parse()`."],["strptime","Parse a time-string as formatted by `built` into a `time::Tm`."]]});

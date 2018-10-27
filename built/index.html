@@ -1,0 +1,115 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `built` crate."><meta name="keywords" content="rust, rustlang, rust-lang, built"><title>built - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate built</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'built', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/built/lib.rs.html#23-909' title='goto source code'>[src]</a></span><span class='in-band'>Crate <a class="mod" href=''>built</a></span></h1><div class='docblock'><p>Provides a crate with information from the time it was built.</p>
+<p><code>built</code> is used as a build-time dependency to collect various information
+about the build environment, serialize it into Rust-code and compile
+it into the final crate. The information collected by <code>built</code> include:</p>
+<ul>
+<li>Various metadata like version, authors, homepage etc. as set by <code>Cargo.toml</code></li>
+<li>The tag or commit id if the crate was being compiled from within a git repo.</li>
+<li>The values of various <code>cfg!</code>, like <code>target_os</code> and <code>target_arch</code>.</li>
+<li>The features the crate was compiled with.</li>
+<li>The various dependencies, dependencies of dependencies and their versions
+cargo ultimately chose to compile.</li>
+<li>The presence of a CI-platform like <code>Travis CI</code> and <code>AppVeyor</code>.</li>
+<li>The used compiler and it's version; the used documentation generator and
+it's version.</li>
+</ul>
+<p><code>built</code> does not add any further dependencies to a crate; all information
+is serialized as types from <code>stdlib</code>. One can include <code>built</code> as a
+runtime-dependency and use it's convenience functions.  The code generated
+by <code>built</code> will not interfere with
+<code>#![deny(warnings, bad_style, future_incompatible, unused, missing_docs, unused_comparisons)]</code>.</p>
+<p>To add <code>built</code> to a crate, add it as a build-time dependency, use a build
+script that collects and serializes the build-time information and <code>include!</code>
+that as code.</p>
+<p>Add this to <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[package]
+build = &quot;build.rs&quot;
+
+[build-dependencies]
+built = &quot;0.3&quot;
+</code></pre>
+<p>Add or modify a build script. In <code>build.rs</code>:</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ<span class='tooltiptext'>This example is not tested</span></div></div><pre class="rust rust-example-rendered ignore">
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">built</span>;
+<span class="kw">fn</span> <span class="ident">main</span>() {
+    <span class="ident">built</span>::<span class="ident">write_built_file</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to acquire build-time information&quot;</span>);
+}</pre>
+<p>The build-script will by default write a file named <code>built.rs</code> into Cargo's output
+directory. It can be picked up in  <code>main.rs</code> (or anywhere else) like this:</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ<span class='tooltiptext'>This example is not tested</span></div></div><pre class="rust rust-example-rendered ignore">
+<span class="comment">// Use of a mod or pub mod is not actually necessary.</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">built_info</span> {
+   <span class="comment">// The file has been placed there by the build script.</span>
+   <span class="macro">include</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/built.rs&quot;</span>));
+}</pre>
+<p>And then used somewhere in the crate's code:</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ<span class='tooltiptext'>This example is not tested</span></div></div><pre class="rust rust-example-rendered ignore">
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">built</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">time</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">semver</span>;
+
+<span class="kw">if</span> (<span class="ident">built_info</span>::<span class="ident">PKG_VERSION_PRE</span> <span class="op">!=</span> <span class="string">&quot;&quot;</span> <span class="op">||</span> <span class="ident">built_info</span>::<span class="ident">GIT_VERSION</span>.<span class="ident">is_some</span>())
+   <span class="op">&amp;&amp;</span> (<span class="ident">built</span>::<span class="ident">util</span>::<span class="ident">strptime</span>(<span class="ident">built_info</span>::<span class="ident">BUILT_TIME_UTC</span>) <span class="op">-</span> <span class="ident">time</span>::<span class="ident">now</span>()).<span class="ident">num_days</span>() <span class="op">&gt;</span> <span class="number">180</span> {
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;You are running a development version that is really old. Update soon!&quot;</span>);
+}
+
+<span class="kw">if</span> <span class="ident">built_info</span>::<span class="ident">CI_PLATFORM</span>.<span class="ident">is_some</span>() {
+    <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Muahahaha, there will be no commit for you, Peter Pan!&quot;</span>);
+}
+
+<span class="kw">let</span> <span class="ident">deps</span> <span class="op">=</span> <span class="ident">built_info</span>::<span class="ident">DEPENDENCIES</span>;
+<span class="kw">if</span> <span class="ident">built</span>::<span class="ident">util</span>::<span class="ident">parse_versions</span>(<span class="kw-2">&amp;</span><span class="ident">deps</span>)
+                .<span class="ident">any</span>(<span class="op">|</span>(<span class="ident">name</span>, <span class="ident">ver</span>)<span class="op">|</span> <span class="ident">name</span> <span class="op">==</span> <span class="string">&quot;DeleteAllMyFiles&quot;</span>
+                                   <span class="op">&amp;&amp;</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="ident">semver</span>::<span class="ident">Version</span>::<span class="ident">parse</span>(<span class="string">&quot;1.1.4&quot;</span>).<span class="ident">unwrap</span>())) {
+    <span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;DeleteAllMyFiles &lt; 1.1.4 is known to sometimes not really delete all your files. Beware!&quot;</span>);
+}
+</pre>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="util/index.html"
+                                  title='mod built::util'>util</a></td>
+                           <td class='docblock-short'>
+                                <p>Various convenience functions for <code>built</code> at runtime.</p>
+
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Options.html"
+                                  title='struct built::Options'>Options</a></td>
+                           <td class='docblock-short'>
+                                <p>Selects which information <code>built</code> should retrieve and write as Rust code.</p>
+
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.CIPlatform.html"
+                                  title='enum built::CIPlatform'>CIPlatform</a></td>
+                           <td class='docblock-short'>
+                                <p>Various Continuous Integration platforms whose presence can be detected.</p>
+
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.write_built_file.html"
+                                  title='fn built::write_built_file'>write_built_file</a></td>
+                           <td class='docblock-short'>
+                                <p>A shorthand for calling <code>write_built_file()</code> with <code>CARGO_MANIFEST_DIR</code> and
+<code>[OUT_DIR]/built.rs</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.write_built_file_with_opts.html"
+                                  title='fn built::write_built_file_with_opts'>write_built_file_with_opts</a></td>
+                           <td class='docblock-short'>
+                                <p>Writes rust-code describing the crate at <code>manifest_location</code> to a new file named <code>dst</code>.</p>
+
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../";window.currentCrate = "built";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>
